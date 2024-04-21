@@ -1,6 +1,6 @@
 {
   "name": "rtn-calculator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Add numbers with Turbo Native Modules",
   "react-native": "js/index",
   "source": "js/index",
