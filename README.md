@@ -2,5 +2,4 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 # Running The Android App
 Make sure to connect Android device with your machine and are connected to the same wifi network
-- **Debug**: `yarn && yarn android`
-- **Release**: `yarn && cd android && ./gradlew installrelease`
+`yarn && yarn android --mode={release|debug}`
