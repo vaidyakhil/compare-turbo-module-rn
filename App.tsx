@@ -25,7 +25,7 @@ const makeNetworkCall = async (
       property: 'this is a property of request body',
     });
   } else {
-    response = await TurboModule.makeNetworkCall({
+    response = TurboModule.makeNetworkCall_without_promise({
       property: 'this is a property of request body',
     });
   }
@@ -35,7 +35,7 @@ const makeNetworkCall = async (
   }
   return {
     type,
-    roundTrip: end - start - 1200,
+    roundTrip: end - start,
   };
 };
 
@@ -51,7 +51,7 @@ let aggregateData: {
   numberOfnativeTrip: 0,
 };
 
-const __temp = Array.from({length: 1}, (_, index) => index);
+const __temp = Array.from({length: 20}, (_, index) => index);
 
 const App = () => {
   const [responses, setResponses] = useState<
