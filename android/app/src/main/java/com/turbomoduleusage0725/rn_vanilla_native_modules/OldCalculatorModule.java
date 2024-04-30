@@ -27,8 +27,8 @@ public class OldCalculatorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void add(double a, double b, Promise promise) {
-        promise.resolve(a + b);
+    public String get_string_via_bridge() {
+        return "Hello via bridge";
     }
 
     @ReactMethod

@@ -80,6 +80,17 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+
+         externalNativeBuild {
+             cmake {
+                 cppFlags "-O2 -frtti -fexceptions -Wall -fstack-protector-all"
+                 // to solve the following error:
+                 // Execution failed for task ':react-native-jsi-network-layer:configureCMakeDebug[arm64-v8a]'.
+                 // > [CXX1212] /Users/vaidyakhil/personal/react_native_usage/AppWithJSINetworkLayer/node_modules/react-native-jsi-network-layer/android/CMakeLists.txt debug|arm64-v8a
+                 // : User is using a static STL but library requires a shared STL [//ReactAndroid/fabricjni]
+                 arguments "-DANDROID_STL=c++_shared"
+             }
+         }
     }
     signingConfigs {
         debug {
@@ -101,6 +112,41 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+    // packagingOptions {
+    //     doNotStrip resolveBuildType() == 'debug' ? "**/**/*.so" : ''
+    //     // Need to exclude reactnativejni, jsi and c++_shared
+    //     // native libraries while packaging as they are produced by react-native as well, eg:
+    //     // 2 files found with path 'lib/arm64-v8a/libjsi.so' from inputs:
+    //     // ... /node_modules/react-native-jsi-network-layer/android/build/intermediates/library_jni/debug/jni/arm64-v8a/libjsi.so
+    //     // ... /.gradle/caches/transforms-3/18e790de7d60dccd07e3a88da530f5b8/transformed/jetified-react-android-0.72.5-debug/jni/arm64-v8a/libjsi.so
+    //     excludes = [
+    //             "META-INF",
+    //             "META-INF/**",
+    //             "**/libjsi.so",
+    //             "**/libc++_shared.so",
+    //             "**/libreactnativejni.so"
+    //     ]
+    // }
+
+     buildFeatures {
+         // required to solve the following issue:
+         // https://github.com/facebook/react-native/issues/35996
+         // Could not find a package configuration file provided by "ReactAndroid"
+         prefab true
+     }
+}
+
+def resolveBuildType() {
+    Gradle gradle = getGradle()
+    String tskReqStr = gradle.getStartParameter().getTaskRequests()['args'].toString()
+
+    return tskReqStr.contains('Release') ? 'release' : 'debug'
 }
 
 dependencies {

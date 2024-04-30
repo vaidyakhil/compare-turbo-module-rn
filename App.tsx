@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useState } from 'react';
+import {useState} from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,16 @@ import {
   ScrollView,
 } from 'react-native';
 
-import TurboModule from 'rtn-calculator/js/NativeCalculator';
+// import TurboModule from 'rtn-calculator/js/NativeCalculator';
 
-const {OldCalculatorModule} = NativeModules;
+const {OldCalculatorModule, AdapterJSIModule} = NativeModules;
+
+let installed = false;
+
+if (installed) {
+  AdapterJSIModule.install();
+  installed = true;
+}
 
 const makeNetworkCall = async (
   type: 'turbo' | 'native',
@@ -21,13 +28,9 @@ const makeNetworkCall = async (
   const start = Date.now();
   let response = null;
   if (type === 'native') {
-    response = await OldCalculatorModule.makeNetworkCall({
-      property: 'this is a property of request body',
-    });
+    response = await OldCalculatorModule.get_string_via_bridge();
   } else {
-    response = await TurboModule.makeNetworkCall({
-      property: 'this is a property of request body',
-    });
+    response = get_string_from_jsi_via_jni();
   }
   const end = Date.now();
   if (__DEV__) {
@@ -35,7 +38,7 @@ const makeNetworkCall = async (
   }
   return {
     type,
-    roundTrip: end - start - 1200,
+    roundTrip: end - start,
   };
 };
 
@@ -51,9 +54,17 @@ let aggregateData: {
   numberOfnativeTrip: 0,
 };
 
-const __temp = Array.from({length: 50}, (_, index) => index);
+const __temp = Array.from({length: 1}, (_, index) => index);
 
 const App = () => {
+  // :::  this crashes
+  // React.useEffect(() => {
+  //   const _init_native_lib = async () => {
+  //     await AdapterJSIModule.install();
+  //   };
+  //   _init_native_lib();
+  // }, []);
+
   const [responses, setResponses] = useState<
     {
       type: 'turbo' | 'native';
@@ -105,6 +116,8 @@ const App = () => {
       style={{
         flex: 1,
         gap: 16,
+        padding: 16,
+        paddingBottom: 64,
       }}>
       <View
         style={{
@@ -116,13 +129,14 @@ const App = () => {
         }}>
         <TouchableOpacity
           onPress={async () => {
+            await AdapterJSIModule.install();
             await performExperiment('turbo');
           }}
           style={{
             padding: 16,
             backgroundColor: '#83fa7d',
           }}>
-          <Text>Turbo Module</Text>
+          <Text>Custom JSI Bindings</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
