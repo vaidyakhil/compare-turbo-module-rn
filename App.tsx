@@ -30,7 +30,7 @@ const makeNetworkCall = async (
   if (type === 'native') {
     response = await OldCalculatorModule.get_string_via_bridge();
   } else {
-    response = get_string_from_jsi_via_jni();
+    response = makeNetworkCall_get_writable_map();
   }
   const end = Date.now();
   if (__DEV__) {

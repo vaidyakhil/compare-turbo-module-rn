@@ -137,41 +137,43 @@ void setupFunctionToAccessJavaObjectForJSRuntime(
     jsRuntime.global().setProperty(jsRuntime, "get_string_from_jsi_via_jni",
                                    std::move(get_string_from_jsi_via_jni));
 
-    // example showcasing how to expose functions to JS runtime,
-    // that are declared in native land
-    // similar to var, std::move is important here
-//    auto nativeFuncUsingJavaClass = facebook::jsi::Function::createFromHostFunction(
-//            jsRuntime,
-//            // name of the function
-//            facebook::jsi::PropNameID::forAscii(jsRuntime, "nativeFuncUsingJavaClass"),
-//            // number of arguments that this function takes
-//            0,
-//            // need to pass env by value to lambda so it can use JAVA methods
-//            [env](
-//                    facebook::jsi::Runtime &runtime,
-//                    const facebook::jsi::Value &thisValue,
-//                    const facebook::jsi::Value *arguments,
-//                    size_t count)
-//                    -> facebook::jsi::Value
-//            {
-//                // Create the object of the class NetworkModule
-//                jclass networkModuleClass = env->FindClass("");
-//                jobject networkModule = env->AllocObject(networkModuleClass);
-//
-//                // signature of the function that needs to be called, "(params)return-type"
-//                // https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/jniTOC.html
-//                jmethodID getDefaultConstructorMethodId = env->GetMethodID(networkModuleClass, "<init>", "()V");
-//                env->CallVoidMethod(networkModule, getDefaultConstructorMethodId);
-//
-//                jmethodID getBalanceMethodId = env->GetMethodID(networkModuleClass, "getBalance", "()D");
-//                jdouble balanceRes = (jdouble)env->CallDoubleMethod(networkModule, getBalanceMethodId);
-//
-//                __android_log_print(ANDROID_LOG_INFO, "NativeJsiNetworkLayer", "balanceRes = %f", (double)balanceRes);
-//
-//                return (double)balanceRes;
-//            });
-//    jsRuntime.global().setProperty(jsRuntime, "nativeFuncUsingJavaClass",
-//                                   std::move(nativeFuncUsingJavaClass));
+    auto makeNetworkCall_get_writable_map = facebook::jsi::Function::createFromHostFunction(
+            jsRuntime,
+            // name of the function
+            facebook::jsi::PropNameID::forAscii(jsRuntime, "makeNetworkCall_get_writable_map"),
+            // number of arguments that this function takes
+            0,
+            // need to pass env by value to lambda so it can use JAVA methods
+            [env](
+                    facebook::jsi::Runtime &runtime,
+                    const facebook::jsi::Value &thisValue,
+                    const facebook::jsi::Value *arguments,
+                    size_t count)
+                    -> facebook::jsi::Value
+            {
+                __android_log_print(ANDROID_LOG_INFO, "custom-jsi-module", "hello from makeNetworkCall_get_writable_map");
+
+                JNIEnv *jniEnv = GetJniEnv();
+
+                jclass jAdapterJSIModuleClass = jniEnv->GetObjectClass(jAdapterJsiModuleObject);
+                __android_log_print(ANDROID_LOG_INFO, "custom-jsi-module", "class of object toh mil gyi");
+
+                jmethodID jMakeNetworkCallIdMethodId = jniEnv->GetMethodID
+                        (jAdapterJSIModuleClass, "makeNetworkCall_get_writable_map","()Lcom/facebook/react/bridge/WritableMap;");
+                __android_log_print(ANDROID_LOG_INFO, "custom-jsi-module", "method-id tk ho gya");
+
+                jobject networkCallResponse = jniEnv->CallObjectMethod(jAdapterJsiModuleObject,
+                                                     jMakeNetworkCallIdMethodId);
+                __android_log_print(ANDROID_LOG_INFO, "custom-jsi-module",
+                                    "network call response bhi mil gya");
+
+//                const char *str = jniEnv->GetStringUTFChars((jstring) stringValueJNI, NULL);
+//                const Object responseObject = new Object(networkCallResponse)
+                return Value();
+            }
+    );
+    jsRuntime.global().setProperty(jsRuntime, "makeNetworkCall_get_writable_map",
+                                   std::move(makeNetworkCall_get_writable_map));
 }
 
 void setupFunctionsForJSRuntime(

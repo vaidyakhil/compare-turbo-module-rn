@@ -32,13 +32,8 @@ public class OldCalculatorModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void makeNetworkCall(ReadableMap requestBody, Promise promise) {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                WritableMap response = WritableMapUtils.getSampleWritableMap();
-                promise.resolve(response);
-            }
-        }, 1200);
+    public void makeNetworkCall(Promise promise) {
+        WritableMap response = WritableMapUtils.getSampleWritableMap();
+        promise.resolve(response);
     }
 }

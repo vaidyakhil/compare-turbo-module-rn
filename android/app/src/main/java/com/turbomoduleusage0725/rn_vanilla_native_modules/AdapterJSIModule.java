@@ -8,7 +8,11 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
+import com.turbomoduleusage0725.JSONObjectUtil;
 import com.turbomoduleusage0725.WritableMapUtils;
+
+import org.json.JSONObject;
 
 import androidx.annotation.NonNull;
 
@@ -46,6 +50,19 @@ public class AdapterJSIModule extends ReactContextBaseJavaModule {
     public String get_string_from_jsi_via_jni() {
         return "Hello via custom JSI bindings via JNI";
     }
+
+    @ReactMethod
+    public WritableMap makeNetworkCall_get_writable_map () {
+        WritableMap response = WritableMapUtils.getSampleWritableMap();
+        return response;
+    }
+
+    @ReactMethod
+    public JSONObject makeNetworkCall_get_jsonobject () {
+        JSONObject response = JSONObjectUtil.getSampleJSONObject();
+        return response;
+    }
+
 
     private native void install_jsi_module_bindings (long jsiPointer);
 
