@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useState } from 'react';
+import {useState} from 'react';
 import {
   View,
   Text,
@@ -51,7 +51,7 @@ let aggregateData: {
   numberOfnativeTrip: 0,
 };
 
-const __temp = Array.from({length: 50}, (_, index) => index);
+const __temp = Array.from({length: 1}, (_, index) => index);
 
 const App = () => {
   const [responses, setResponses] = useState<
