@@ -6,8 +6,10 @@
 #include <sys/types.h>
 #include "thread"
 #include <chrono>
+#include <fbjni/fbjni.h>
 
 using namespace facebook::jsi;
+using namespace facebook::jni;
 using namespace std;
 
 JavaVM *java_vm;
@@ -19,6 +21,70 @@ JNIEnv *jniEnvTest;
 * when the thread
 * See https://stackoverflow.com/a/30026231 for detailed explanation
 */
+
+
+facebook::jsi::Value convertJNIObjectToJSIValue(
+        facebook::jsi::Runtime& runtime,
+        const facebook::jni::local_ref<jobject>& object
+) {
+    if (object == nullptr) {
+        // null
+
+        return facebook:: jsi::Value::undefined();
+    } else if (object->isInstanceOf(facebook::jni::JBoolean::javaClassStatic())) {
+        // Boolean
+
+        auto boxed = static_ref_cast<facebook::jni::JBoolean>(object);
+        bool value = boxed->value();
+        return facebook:: jsi::Value(value);
+    } else if (object->isInstanceOf( facebook:: jni::JDouble::javaClassStatic())) {
+        // Double
+
+        auto boxed = static_ref_cast<JDouble>(object);
+        double value = boxed->value();
+        return facebook:: jsi::Value(value);
+    } else if (object->isInstanceOf( facebook:: jni::JInteger::javaClassStatic())) {
+        // Integer
+
+        auto boxed = static_ref_cast<JInteger>(object);
+        return facebook:: jsi::Value(boxed->value());
+    } else if (object->isInstanceOf( facebook:: jni::JString::javaClassStatic())) {
+        // String
+
+        return facebook:: jsi::String::createFromUtf8(runtime, object->toString());
+    } else if (object->isInstanceOf(JList<jobject>::javaClassStatic())) {
+        // List<E>
+
+        auto arrayList = static_ref_cast<JList<jobject>>(object);
+        auto size = arrayList->size();
+
+        auto result = facebook:: jsi::Array(runtime, size);
+        size_t i = 0;
+        for (const auto& item : *arrayList) {
+            result.setValueAtIndex(runtime, i, convertJNIObjectToJSIValue(runtime, item));
+            i++;
+        }
+        return result;
+    } else if (object->isInstanceOf(JMap<jstring, jobject>::javaClassStatic())) {
+        // Map<K, V>
+
+        auto map = static_ref_cast<JMap<jstring, jobject>>(object);
+
+        auto result = facebook:: jsi::Object(runtime);
+        for (const auto& entry : *map) {
+            auto key = entry.first->toString();
+            auto value = entry.second;
+            auto jsiValue = convertJNIObjectToJSIValue(runtime, value);
+            result.setProperty(runtime, key.c_str(), jsiValue);
+        }
+        return result;
+    }
+
+    auto type = object->getClass()->toString();
+    auto message = "Cannot convert Java type \"" + type + "\" to facebook:: jsi::Value!";
+    __android_log_write(ANDROID_LOG_ERROR, "VisionCamera", message.c_str());
+    throw std::runtime_error(message);
+}
 
 void DeferThreadDetach(JNIEnv *env) {
     static pthread_key_t thread_key;
@@ -164,12 +230,18 @@ void setupFunctionToAccessJavaObjectForJSRuntime(
 
                 jobject networkCallResponse = jniEnv->CallObjectMethod(jAdapterJsiModuleObject,
                                                      jMakeNetworkCallIdMethodId);
+
                 __android_log_print(ANDROID_LOG_INFO, "custom-jsi-module",
                                     "network call response bhi mil gya");
 
-//                const char *str = jniEnv->GetStringUTFChars((jstring) stringValueJNI, NULL);
-//                const Object responseObject = new Object(networkCallResponse)
-                return Value();
+                facebook::jsi::Value jsResponse = convertJNIObjectToJSIValue(
+                            runtime,
+                            adopt_local(networkCallResponse)
+                        );
+                __android_log_print(ANDROID_LOG_INFO, "custom-jsi-module", "got jsi value from "
+                                                                           "java writable map");
+
+                return jsResponse;
             }
     );
     jsRuntime.global().setProperty(jsRuntime, "makeNetworkCall_get_writable_map",

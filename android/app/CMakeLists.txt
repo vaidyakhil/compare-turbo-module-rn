@@ -25,7 +25,7 @@ add_library(
 # this only looks for the mentioned packages and do not link them itself
 # for linking, call target_link_libraries
 find_package(ReactAndroid REQUIRED CONFIG)
-#find_package(fbjni REQUIRED CONFIG)
+find_package(fbjni REQUIRED CONFIG)
 find_library(LOG_LIB log)
 
 # Link everything together
@@ -34,6 +34,6 @@ target_link_libraries(
     ${LOG_LIB}                          # <-- Logcat logger
 #    android                             # <-- Android JNI core
     ReactAndroid::jsi                   # <-- RN: JSI | required to use <jsi/jsi.h> headers
-#    ReactAndroid::reactnativejni        # <-- RN: React Native JNI bindings
-#    fbjni::fbjni                        # <-- fbjni
+    ReactAndroid::reactnativejni        # <-- RN: React Native JNI bindings
+    fbjni::fbjni                        # <-- fbjni
 )
