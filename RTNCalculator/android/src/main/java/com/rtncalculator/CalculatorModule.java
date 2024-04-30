@@ -40,4 +40,10 @@ public class CalculatorModule extends NativeCalculatorSpec {
             }
         }, 1200);
     }
+
+    @Override
+    public WritableMap makeNetworkCall_without_promise(ReadableMap requestBody) {
+        WritableMap response = WritableMapUtils.getSampleWritableMap();
+        return response;
+    }
 }
